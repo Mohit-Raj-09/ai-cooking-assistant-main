@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>ChefAI - AI Cooking Assistant</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#38e07b",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#040d00",
+                    },
+                    fontFamily: {
+                        display: ["Space Grotesk"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        full: "9999px",
+                    },
+                    keyframes: {
+                        fadeUp: {
+                            'from': { opacity: 0, transform: 'translateY(30px)' },
+                            'to': { opacity: 1, transform: 'translateY(0)' },
+                        },
+                    },
+                    animation: {
+                        scrollVisible: 'fadeUp 0.6s ease-out forwards',
+                    }
+                },
+            },
+        };
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+        }
+        .hidden { display: none; }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .loading-spinner {
+            border: 4px solid rgba(56, 224, 123, 0.3);
+            border-top: 4px solid #38e07b;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* New Menu/Scroll Animation Styles */
+        .mobile-menu-drawer {
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+            top: 0;
+            height: 100vh;
+        }
+        .mobile-menu-drawer.open {
+            transform: translateX(0);
+        }
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .animate-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .stagger-delay-1 { transition-delay: 0.1s; }
+        .stagger-delay-2 { transition-delay: 0.2s; }
+        .stagger-delay-3 { transition-delay: 0.3s; }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200">
+    <div class="flex min-h-screen w-full flex-col">
+        <header style="box-shadow: 0 8px 32px 0 rgba(56, 224, 123, 0.15);" class="sticky top-0 z-20 h-15 flex items-center w-full border-b border-primary/20 dark:border-primary/30 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm">
+            <div class="container mx-auto flex items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+                <div class="flex items-center gap-4">
+                    <img src="logo_new.png" alt="ChefAI Logo" class="h-10 w-10 object-contain animate-on-scroll" />
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white animate-on-scroll stagger-delay-1">
+                        Chef<span class="text-primary">AI</span>
+                    </h1>
+                </div>
+                
+                <div class="flex items-center gap-2"> 
+                    <nav class="hidden items-center gap-20 md:flex">
+                        <a class="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors animate-on-scroll stagger-delay-2" href="sample.html">Home</a>
+                        <a class="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors animate-on-scroll stagger-delay-3" href="recipes.html">Recipes</a>
+                        <a class="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors animate-on-scroll stagger-delay-4" href="about.html">About Us</a>
+                    </nav>
+                    <button id="mobile-menu-button" class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200/50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 hover:text-primary dark:hover:text-primary transition-colors md:hidden">
+                        <span class="material-symbols-outlined">menu</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div 
+            id="mobile-menu-drawer"
+            class="mobile-menu-drawer fixed top-0 right-0 z-50 w-64 h-full p-6 
+                    bg-background-light dark:bg-background-dark shadow-2xl md:hidden"
+        >
+            <div class="flex justify-between items-center mb-10">
+                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Menu</h2>
+                <button id="close-menu-button" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined text-3xl">close</span>
+                </button>
+            </div>
+            <nav class="flex flex-col space-y-4">
+                <a href="sample.html" class="text-xl font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors py-2 border-b border-primary/20">Home</a>
+                <a href="recipes.html" class="text-xl font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors py-2 border-b border-primary/20">Recipes</a>
+                <a href="about.html" class="text-xl font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors py-2">About Us</a>
+            </nav>
+        </div>
+
+        <main class="flex-grow" id="mainContent">
+            <div id="homeSection">
+                <section class="relative w-full h-[700px] overflow-hidden">
+                    <div class="absolute inset-0 w-full h-full">
+                        <img alt="Delicious food hero image" style="object-position: top; opacity: 0.8" class="w-full h-full object-cover" src="logo_bot_3 (1).jpg" />
+                        <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(to bottom, transparent 60%, #040d00 100%);"></div>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-background-dark/80 to-transparent"></div>
+                    <div class="relative z-10 container mx-auto px-4 py-16 h-full flex flex-col justify-end items-center text-center sm:px-6 lg:px-8">
+                        <h1 class="text-4xl font-bold tracking-tighter text-white sm:text-5xl md:text-6xl max-w-3xl animate-on-scroll">
+                            Unlock Culinary Creativity with ChefAI
+                        </h1>
+                        <p class="max-w-xl mt-4 text-gray-200 md:text-lg animate-on-scroll stagger-delay-1">
+                            Transform your kitchen into a gourmet paradise with ChefAI. <br> Our AI-powered assistant helps you discover new recipes, optimize your cooking, and create unforgettable meals.
+                        </p>
+                    </div>
+                </section>
+
+                <section class="container mx-auto px-4 py-16 sm:px-6 lg:px-8 animate-on-scroll stagger-delay-2">
+                    <div class="flex flex-col items-center text-center">
+                        <a href="#input_area">
+                            <button class="mt-4 inline-flex h-12 items-center justify-center rounded-lg bg-primary px-8 text-base font-bold text-background-dark transition-transform hover:scale-105">
+                                Get Started
+                            </button>
+                        </a>
+                    </div>
+                </section>
+                
+                <section id = "try_ai" class="bg-primary/5 dark:bg-primary/10 py-20">
+                    <div class="container mx-auto flex flex-col items-center gap-8 px-4 text-center sm:px-6 lg:px-8">
+                        <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl animate-on-scroll">
+                            Welcome to ChefAI
+                        </h2>
+                        <p class="max-w-2xl text-lg text-gray-600 dark:text-gray-400 animate-on-scroll stagger-delay-1">
+                            Upload a picture of your refrigerator, and we'll show you what delicious dishes you can create with the ingredients you already have. It's like having a personal chef in your pocket!
+                        </p>
+                        <div class="w-full max-w-xl p-4 animate-on-scroll stagger-delay-2">
+                            <div id="uploadBox" class="relative flex cursor-pointer flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed border-primary/50 dark:border-primary/40 bg-background-light dark:bg-background-dark p-12 transition-colors hover:border-primary hover:bg-primary/10 dark:hover:bg-primary/20">
+                                <div id="input_area" class="flex h-16 w-16 items-center justify-center rounded-full bg-primary/20 text-primary">
+                                    <span class="material-symbols-outlined text-4xl">cloud_upload</span>
+                                </div>
+                                <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                    Upload a picture of your refrigerator
+                                </p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                    Drag and drop or click to upload
+                                </p>
+                                <input id="fileInput" class="absolute inset-0 h-full w-full opacity-0 cursor-pointer" type="file" accept="image/*" />
+                            </div>
+                            
+                            <div id="previewSection" class="hidden mt-6">
+                                <div class="relative rounded-xl overflow-hidden">
+                                    <img id="previewImage" class="w-full h-64 object-cover rounded-xl" alt="Preview" />
+                                    <button id="removeImage" class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition-colors">
+                                        <span class="material-symbols-outlined">close</span>
+                                    </button>
+                                </div>
+                                <div class="mt-4 flex gap-4 justify-center">
+                                    <label class="text-sm text-gray-700 dark:text-gray-300">Recipe Count:</label>
+                                    <input id="recipeCount" type="number" min="1" max="5" value="1" class="w-16 px-2 py-1 rounded bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-700" />
+                                </div>
+                                <button id="analyzeBtn" class="mt-4 inline-flex h-12 items-center justify-center rounded-lg bg-primary px-8 text-base font-bold text-background-dark transition-transform hover:scale-105 w-full">
+                                    Analyze & Generate Recipes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div id="resultsSection" class="hidden">
+                <section class="container mx-auto px-4 py-16 sm:px-6 lg:px-8">
+                    <div class="max-w-5xl mx-auto">
+                        <button id="backBtn" class="mb-8 inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                            <span class="font-semibold">Back to Upload</span>
+                        </button>
+
+                        <div id="loadingState" class="flex flex-col items-center justify-center py-20">
+                            <div class="loading-spinner"></div>
+                            <p class="mt-4 text-xl text-gray-600 dark:text-gray-400">Analyzing your image...</p>
+                            <p class="mt-2 text-sm text-gray-500 dark:text-gray-500">This may take a few moments</p>
+                        </div>
+
+                        <div id="resultsContent" class="hidden fade-in">
+                            <div class="bg-primary/5 dark:bg-primary/10 rounded-xl p-8 mb-8 animate-on-scroll">
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                                    <span class="material-symbols-outlined align-middle mr-2">image</span>
+                                    Image Analysis
+                                </h2>
+                                <div class="flex flex-col md:flex-row gap-6">
+                                    <img id="analyzedImage" class="w-full md:w-1/3 h-64 object-cover rounded-lg" alt="Analyzed" />
+                                    <div class="flex-1">
+                                        <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">Detected Ingredients:</h3>
+                                        <p id="captionText" class="text-gray-700 dark:text-gray-300 text-lg leading-relaxed"></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-8">
+                                <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-6 animate-on-scroll stagger-delay-1">
+                                    <span class="material-symbols-outlined align-middle mr-2">restaurant</span>
+                                    Generated Recipes
+                                </h2>
+                                <div id="recipesContainer" class="space-y-6"></div>
+                            </div>
+                        </div>
+
+                        <div id="errorState" class="hidden text-center py-20">
+                            <div class="flex justify-center mb-4">
+                                <span class="material-symbols-outlined text-6xl text-red-500">error</span>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Oops! Something went wrong</h3>
+                            <p id="errorMessage" class="text-gray-600 dark:text-gray-400 mb-6"></p>
+                            <button id="retryBtn" class="inline-flex h-12 items-center justify-center rounded-lg bg-primary px-8 text-base font-bold text-background-dark transition-transform hover:scale-105">
+                                Try Again
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <footer class="bg-background-light dark:bg-background-dark border-t border-gray-200 dark:border-gray-800">
+            <div class="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+                <div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
+                    <div class="flex flex-wrap justify-center gap-x-6 gap-y-2">
+                        <a class="text-sm text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors" href="#">Privacy Policy</a>
+                        <a class="text-sm text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors" href="#">Terms of Service</a>
+                    </div>
+                    <p class="text-sm text-gray-500 dark:text-gray-500">© 2024 ChefAI. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Configuration
+        const API_URL = 'http://localhost:8000/api/analyze'; // Change this to your API endpoint
+
+        // DOM Elements
+        const fileInput = document.getElementById('fileInput');
+        const uploadBox = document.getElementById('uploadBox');
+        const previewSection = document.getElementById('previewSection');
+        const previewImage = document.getElementById('previewImage');
+        const removeImage = document.getElementById('removeImage');
+        const recipeCount = document.getElementById('recipeCount');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const homeSection = document.getElementById('homeSection');
+        const resultsSection = document.getElementById('resultsSection');
+        const loadingState = document.getElementById('loadingState');
+        const resultsContent = document.getElementById('resultsContent');
+        const errorState = document.getElementById('errorState');
+        const errorMessage = document.getElementById('errorMessage');
+        const backBtn = document.getElementById('backBtn');
+        const retryBtn = document.getElementById('retryBtn');
+        const captionText = document.getElementById('captionText');
+        const analyzedImage = document.getElementById('analyzedImage');
+        const recipesContainer = document.getElementById('recipesContainer');
+        
+        // New Mobile Menu Elements
+        const menuButton = document.getElementById('mobile-menu-button');
+        const closeButton = document.getElementById('close-menu-button');
+        const menuDrawer = document.getElementById('mobile-menu-drawer');
+        const body = document.body;
+
+
+        let selectedFile = null;
+
+        // --- Core Application Logic (Unchanged) ---
+
+        // File Input Handler
+        fileInput.addEventListener('change', handleFileSelect);
+        
+        // Drag and Drop
+        uploadBox.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadBox.classList.add('border-primary', 'bg-primary/20');
+        });
+
+        uploadBox.addEventListener('dragleave', () => {
+            uploadBox.classList.remove('border-primary', 'bg-primary/20');
+        });
+
+        uploadBox.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadBox.classList.remove('border-primary', 'bg-primary/20');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        }
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+
+            selectedFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                uploadBox.classList.add('hidden');
+                previewSection.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        removeImage.addEventListener('click', () => {
+            selectedFile = null;
+            fileInput.value = '';
+            previewImage.src = '';
+            previewSection.classList.add('hidden');
+            uploadBox.classList.remove('hidden');
+        });
+
+        analyzeBtn.addEventListener('click', analyzeImage);
+
+        async function analyzeImage() {
+            if (!selectedFile) return;
+
+            // Show results section and loading state
+            homeSection.classList.add('hidden');
+            resultsSection.classList.remove('hidden');
+            loadingState.classList.remove('hidden');
+            resultsContent.classList.add('hidden');
+            errorState.classList.add('hidden');
+
+            // Scroll to top smoothly
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            try {
+                const formData = new FormData();
+                formData.append('image', selectedFile);
+                formData.append('count', recipeCount.value);
+
+                console.log('Sending request to API...');
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Server error: ${response.status} - ${errorText}`);
+                }
+
+                const data = await response.json();
+                console.log('Response data:', data);
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // Add a small delay to ensure smooth transition
+                setTimeout(() => {
+                    displayResults(data);
+                }, 300);
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError(error.message);
+            }
+        }
+
+        function displayResults(data) {
+            console.log('Displaying results...');
+            
+            // Hide loading, show results
+            loadingState.classList.add('hidden');
+            resultsContent.classList.remove('hidden');
+
+            // Display analyzed image
+            analyzedImage.src = previewImage.src;
+
+            // Display caption
+            captionText.textContent = data.caption || 'No caption available';
+
+            // Display recipes
+            recipesContainer.innerHTML = '';
+            
+            if (data.recipes && data.recipes.length > 0) {
+                const recipeCards = [];
+                data.recipes.forEach((recipe, index) => {
+                    const recipeCard = createRecipeCard(recipe, index + 1);
+                    recipesContainer.appendChild(recipeCard);
+                    recipeCards.push(recipeCard);
+                });
+
+                // 🌟 NEW: Manually trigger the 'fade-in-up' animation for the first few recipes
+                // This gives an immediate visual feedback without relying on scrolling.
+                setTimeout(() => {
+                    recipeCards.forEach((card, index) => {
+                        // Apply 'is-visible' class based on stagger delay timing
+                        // We check if the element is already in view (which it should be after generation)
+                        const delay = Math.min(index + 1, 3) * 100; // Use a max stagger delay of 0.3s
+                        setTimeout(() => {
+                            card.classList.add('is-visible');
+                            // After showing, stop observing if we used the observer earlier.
+                            // Since we are manually triggering, we don't need the observer for these initial cards.
+                            observer.unobserve(card); 
+                        }, 500 + delay); // Start animating after the resultsContent fade-in finishes (500ms)
+                    });
+                }, 0); 
+                
+            } else {
+                recipesContainer.innerHTML = '<p class="text-gray-600 dark:text-gray-400">No recipes generated.</p>';
+            }
+
+            console.log('Results displayed successfully');
+        }
+
+        function createRecipeCard(recipe, index) {
+            const card = document.createElement('div');
+            // Apply animate-on-scroll and stagger-delay classes here
+            // Note: We use the maximum stagger-delay-3 class to ensure the CSS delay transition property is available.
+            const staggerClass = 'stagger-delay-' + (index > 3 ? 3 : index);
+            card.className = `bg-background-light dark:bg-background-dark border-2 border-primary/30 rounded-xl p-8 hover:border-primary/50 transition-colors shadow-lg animate-on-scroll ${staggerClass}`;
+            
+            // Parse recipe to make it more readable
+            const formattedRecipe = recipe
+                .replace(/\*\*(.*?)\*\*/g, '<strong class="text-primary">$1</strong>') // Bold text
+                .replace(/\n/g, '<br>'); // Line breaks
+            
+            card.innerHTML = `
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20 text-primary font-bold text-xl">
+                        ${index}
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Recipe ${index}</h3>
+                </div>
+                <div class="font-display text-gray-700 dark:text-gray-300 leading-relaxed bg-primary/5 dark:bg-primary/10 p-6 rounded-lg border border-primary/20 text-left">
+                    ${formattedRecipe}
+                </div>
+            `;
+            
+            return card;
+        }
+
+        function showError(message) {
+            loadingState.classList.add('hidden');
+            resultsContent.classList.add('hidden');
+            errorState.classList.remove('hidden');
+            errorMessage.textContent = message || 'An unexpected error occurred. Please try again.';
+        }
+
+        backBtn.addEventListener('click', () => {
+            resultsSection.classList.add('hidden');
+            homeSection.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        retryBtn.addEventListener('click', () => {
+            resultsSection.classList.add('hidden');
+            homeSection.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // --- Utility Functionality ---
+        
+        // 1. Mobile Menu Logic
+        const toggleMenu = (open) => {
+            if (open) {
+                menuDrawer.classList.add('open');
+                document.documentElement.classList.add('overflow-hidden');
+            } else {
+                menuDrawer.classList.remove('open');
+                document.documentElement.classList.remove('overflow-hidden');
+            }
+        };
+
+        if (menuButton) {
+            menuButton.addEventListener('click', () => toggleMenu(true));
+        }
+        if (closeButton) {
+            closeButton.addEventListener('click', () => toggleMenu(false));
+        }
+        menuDrawer.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => toggleMenu(false));
+        });
+
+        // 2. Scroll Animation Observer (Still needed for elements further down the page)
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target); 
+                }
+            });
+        }, {
+            threshold: 0.1, 
+            rootMargin: '0px 0px -50px 0px' 
+        });
+
+        document.querySelectorAll('.animate-on-scroll').forEach(element => {
+            observer.observe(element);
+        });
+
+
+        // Smooth scrolling
+        document.documentElement.style.scrollBehavior = "smooth";
+    </script>
+    <style>
+        html.overflow-hidden {
+            overflow: hidden !important;
+        }
+    </style>
+</body>
+</html>

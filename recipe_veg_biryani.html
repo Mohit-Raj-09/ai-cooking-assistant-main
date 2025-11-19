@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <title>Fragrant Vegetable Biryani Recipe</title>
+        <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+
+        <script>
+            tailwind.config = {
+                darkMode: "class",
+                theme: { extend: { colors: { primary: "#38e07b", secondary: "#4ECDC4", "background-light": "#f6f8f7", "background-dark": "#040d00", }, fontFamily: { display: "Space Grotesk" }, borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px", }, }, },
+            };
+        </script>
+        <style>
+            /* ADDED: Mobile Menu Drawer CSS from sample.html */
+            .mobile-menu-drawer {
+                transform: translateX(100%);
+                transition: transform 0.3s ease-in-out;
+            }
+            .mobile-menu-drawer.open {
+                transform: translateX(0);
+            }
+            .material-symbols-outlined {
+                font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0,
+                    "opsz" 24;
+            }
+        </style>
+    </head>
+    <body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200">
+        <div class="flex flex-col min-h-screen">
+            <header style="box-shadow: 0 8px 32px 0 rgba(56, 224, 123, 0.15);" class="sticky top-0 z-20 h-15 flex items-center w-full border-b border-primary/20 dark:border-primary/30 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm">
+                <div class="container mx-auto flex items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+                    
+                    <div class="flex items-center gap-4">
+                        <img src="logo_new.png" alt="ChefAI Logo" class="h-10 w-10 object-contain" />
+                        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Chef<span class="text-primary">AI</span></h1>
+                    </div>
+                    
+                    <div class="flex items-center gap-2"> 
+                        <nav class="hidden items-center gap-20 md:flex">
+                            <a class="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors" href="sample.html">Home</a>
+                            <a class="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors" href="recipes.html">Recipes</a>
+                            <a class="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors" href="about.html">About Us</a>
+                        </nav>
+                        <button
+                            id="mobile-menu-button"
+                            class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200/50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 hover:text-primary dark:hover:text-primary transition-colors md:hidden"
+                        >
+                            <span class="material-symbols-outlined">menu</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            <div 
+                id="mobile-menu-drawer"
+                class="mobile-menu-drawer fixed top-0 right-0 z-50 w-64 h-full p-6 
+                       bg-background-light dark:bg-background-dark shadow-2xl md:hidden"
+            >
+                <div class="flex justify-between items-center mb-10">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Menu</h2>
+                    <button id="close-menu-button" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined text-3xl">close</span>
+                    </button>
+                </div>
+                <nav class="flex flex-col space-y-4">
+                    <a href="sample.html" class="text-xl font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors py-2 border-b border-primary/20">Home</a>
+                    <a href="recipes.html" class="text-xl font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors py-2 border-b border-primary/20">Recipes</a>
+                    <a href="about.html" class="text-xl font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors py-2">About Us</a>
+                </nav>
+            </div>
+
+            <main class="flex-grow py-12 px-4">
+                <div class="container mx-auto max-w-4xl">
+                    <a href="recipes.html" class="flex items-center gap-2 text-secondary hover:text-primary transition-colors mb-8 font-medium">
+                        <span class="material-symbols-outlined">arrow_back</span> Back to Recipes
+                    </a>
+                    <h2 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">Fragrant Vegetable Biryani</h2>
+                    <div class="grid md:grid-cols-3 gap-8 mb-10">
+                        <div class="md:col-span-2">
+                            <img src="recipe_veg_biryani.jpg" alt="Vegetable Biryani" class="w-full h-96 object-cover rounded-xl shadow-lg mb-6" />
+                            <p class="text-lg text-gray-700 dark:text-gray-300">An aromatic, layered rice dish where par-cooked basmati rice is combined with a richly spiced vegetable and curd mixture (marination). The dish is cooked 'dum' style to lock in the intense aroma and flavor.</p>
+                            <div class="mt-6 flex gap-4 text-primary">
+                                <span class="flex items-center gap-1 font-medium">Aroma: High</span>
+                                <span class="flex items-center gap-1 font-medium">Prep: 30 min</span>
+                                <span class="flex items-center gap-1 font-medium">Cook: 40 min</span>
+                            </div>
+                        </div>
+                        <div class="md:col-span-1 bg-primary/10 dark:bg-primary/20 p-6 rounded-xl">
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Ingredients</h3>
+                            <ul class="list-disc list-inside text-gray-700 dark:text-gray-300 space-y-2">
+                                <li>1 cup Basmati Rice</li>
+                                <li>2 cups Mixed vegetables (Carrots, Beans, Potatoes)</li>
+                                <li>1/2 cup Plain Yogurt</li>
+                                <li>2 tbsp Biryani Masala</li>
+                                <li>Fresh Mint and Coriander leaves</li>
+                                <li>Saffron milk (for color)</li>
+                                <li>Whole spices (Cinnamon, Cardamom, Bay leaf)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <h3 class="text-3xl font-bold text-gray-900 dark:text-white mb-4 border-b border-primary/50 pb-2">Preparation Steps</h3>
+                    <ol class="list-decimal list-inside space-y-4 text-lg text-gray-700 dark:text-gray-300">
+                        <li>**Cook Rice:** Wash and soak Basmati rice for 30 minutes. Par-boil it with whole spices and salt until 70% cooked. Drain and set aside.</li>
+                        <li>**Prepare Veggie Base:** Marinate mixed vegetables in yogurt, ginger-garlic paste, and Biryani Masala for 15 minutes. Cook the marinated vegetables until half-done.</li>
+                        <li>**Layer and Dum:** In a heavy-bottomed pot, spread a layer of the cooked vegetable mixture. Top with a layer of the par-cooked rice. Drizzle with saffron milk and sprinkle mint/coriander leaves.</li>
+                        <li>**Final Cook:** Seal the pot tightly (use dough or a heavy lid). Cook on very low heat (dum) for 20-25 minutes. Gently fluff the Biryani and serve with Raita (yogurt dip).</li>
+                    </ol>
+                </div>
+            </main>
+
+            <footer class="border-t border-primary/20 dark:border-primary/30">
+                <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                        <div class="flex gap-6">
+                            <a class="text-sm text-black/60 dark:text-white/60 hover:text-primary dark:hover:text-primary transition-colors" href="#">Contact Us</a>
+                            <a class="text-sm text-black/60 dark:text-white/60 hover:text-primary dark:hover:text-primary transition-colors" href="#">Privacy Policy</a>
+                            <a class="text-sm text-black/60 dark:text-white/60 hover:text-primary dark:hover:text-primary transition-colors" href="#">Terms of Service</a>
+                        </div>
+                        <p class="text-sm text-black/60 dark:text-white/60">© 2024 ChefAI. All rights reserved.</p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const menuButton = document.getElementById('mobile-menu-button');
+                const closeButton = document.getElementById('close-menu-button');
+                const menuDrawer = document.getElementById('mobile-menu-drawer');
+                const body = document.body;
+
+                const toggleMenu = (open) => {
+                    if (open) {
+                        menuDrawer.classList.add('open');
+                        body.style.overflow = 'hidden'; // Prevent scrolling background content
+                    } else {
+                        menuDrawer.classList.remove('open');
+                        body.style.overflow = '';
+                    }
+                };
+
+                if (menuButton) {
+                    menuButton.addEventListener('click', () => toggleMenu(true));
+                }
+                if (closeButton) {
+                    closeButton.addEventListener('click', () => toggleMenu(false));
+                }
+            });
+        </script>
+    </body>
+</html>

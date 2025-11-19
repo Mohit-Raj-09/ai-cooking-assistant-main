@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <title>ChefAI Recipes</title>
+        <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+        
+        <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+
+        <link href="https://fonts.googleapis.com" rel="preconnect" />
+        <link
+            crossorigin=""
+            href="https://fonts.gstatic.com"
+            rel="preconnect"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+            rel="stylesheet"
+        />
+        <script>
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            primary: "#38e07b",
+                            secondary: "#4ECDC4",
+                            accent: "#FFE66D",
+                            "background-light": "#f6f8f7",
+                            "background-dark": "#040d00",
+                        },
+                        fontFamily: { display: "Space Grotesk" },
+                        borderRadius: {
+                            DEFAULT: "0.25rem",
+                            lg: "0.5rem",
+                            xl: "0.75rem",
+                            full: "9999px",
+                        },
+                        keyframes: {
+                            "bounce-in": {
+                                "0%": { transform: "scale(0.5)", opacity: "0" },
+                                "100%": { transform: "scale(1)", opacity: "1" },
+                            },
+                            "float-y": {
+                                "0%, 100%": { transform: "translateY(0)" },
+                                "50%": { transform: "translateY(-10px)" },
+                            },
+                            "progress-timer": { 
+                                "0%": { width: "0%" },
+                                "100%": { width: "100%" },
+                            }
+                        },
+                        animation: {
+                            "bounce-in": "bounce-in 0.5s ease-out",
+                            "float-y": "float-y 3s ease-in-out infinite",
+                            "progress-timer": "progress-timer 5s linear forwards", 
+                        },
+                    },
+                },
+            };
+        </script>
+        <style>
+            .material-symbols-outlined {
+                font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0,
+                    "opsz" 24;
+            }
+            .ri-star-fill, .ri-star-half-fill, .ri-star-line {
+                font-size: 1.25rem;
+                color: #FFE66D;
+                vertical-align: middle; 
+            }
+            .recipe-card-bg {
+                /* SVG for Light Mode */
+                background-image: url('data:image/svg+xml,%3Csvg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M14.004 0L0 14.004V0h14.004zM50 0L0 50l50 50 50-50L50 0zm25 25L50 50l25 25 25-25L75 25zm0 0l-25 25l-25-25L75 25z" fill="%23FFE66D" opacity="0.1"/%3E%3C/svg%3E');
+                background-size: 150px;
+                background-repeat: repeat;
+            }
+            .dark .recipe-card-bg {
+                /* SVG for Dark Mode */
+                background-image: url('data:image/svg+xml,%3Csvg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M14.004 0L0 14.004V0h14.004zM50 0L0 50l50 50 50-50L50 0zm25 25L50 50l25 25 25-25L75 25zm0 0l-25 25l-25-25L75 25z" fill="%234ECDC4" opacity="0.05"/%3E%3C/svg%3E');
+            }
+            .carousel-container {
+                overflow: hidden;
+                width: 100%;
+            }
+            .carousel-track {
+                display: flex;
+                width: max-content;
+                will-change: transform; 
+            }
+            .carousel-track.smooth-transition {
+                transition: transform 0.5s ease-in-out !important;
+            }
+            
+            /* Carousel Item Width for 2 cards visible */
+            .carousel-item {
+                flex: 0 0 auto;
+                width: 460px; /* Reduced width to fit 2 items + margin */
+                margin-right: 2rem; /* 32px */
+            }
+            .carousel-item:last-child {
+                margin-right: 0;
+            }
+            .ingredient-card-carousel {
+                width: 100%;
+                height: 220px;
+                display: flex;
+                flex-direction: row;
+                padding: 0;
+                text-align: left;
+                border-radius: 0.75rem;
+                overflow: hidden;
+            }
+            .ingredient-card-carousel .img-wrapper {
+                height: 220px;
+                width: 50%;
+                overflow: hidden;
+                flex-shrink: 0;
+            }
+            .ingredient-card-carousel .content-wrapper {
+                width: 50%;
+                padding: 1.5rem;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+
+            #recipe-suggestions {
+                position: absolute;
+                top: 100%; 
+                left: 0;
+                right: 0;
+                z-index: 50; 
+                background-color: #f6f8f7e6; 
+                backdrop-filter: blur(4px); 
+                -webkit-backdrop-filter: blur(4px); 
+                border-radius: 0 0 0.75rem 0.75rem;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                max-height: 200px;
+                overflow-y: auto;
+                text-align: left;
+            }
+
+            .dark #recipe-suggestions {
+                background-color: #040d00e6; 
+                box-shadow: 0 4px 8px rgba(56, 224, 123, 0.2);
+            }
+            
+            .suggestion-item {
+                padding: 1rem 1.5rem;
+                cursor: pointer;
+                transition: background-color 0.2s;
+            }
+            .suggestion-item:hover {
+                background-color: #38e07b33; 
+            }
+
+            /* Image Hover and Overlay Fix */
+            .recipe-image-container {
+                overflow: hidden;
+            }
+
+            .recipe-image-container img {
+                transition: transform 0.5s ease-in-out;
+            }
+
+            .group:hover .recipe-image-container img {
+                transform: scale(1.1);
+            }
+            
+            .recipe-overlay {
+                background: linear-gradient(
+                    to top,
+                    rgba(56, 224, 123, 0.4), 
+                    transparent 60%
+                );
+                transition: opacity 0.5s;
+            }
+
+            /* Progress bar style */
+            .progress-bar-container {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 5px;
+                background-color: rgba(0, 0, 0, 0.2);
+                overflow: hidden;
+            }
+            .progress-bar {
+                height: 100%;
+                width: 0;
+                background-color: #38e07b; /* Primary color */
+                transform-origin: left;
+            }
+            .progress-bar.running {
+                animation: progress-timer 5s linear forwards; /* 5 seconds */
+            }
+
+            /* Reduced Grid Card Size */
+            .recipe-card .p-6 {
+                padding: 1rem; 
+            }
+            .recipe-card .h3 {
+                font-size: 1.5rem;
+            }
+            .recipe-card .h-56 {
+                height: 12rem; /* Reduced image height (h-48 equivalent) */
+            }
+            
+            /* HEADER Z-INDEX ADJUSTMENT */
+            header {
+                z-index: 50 !important; /* Ensure header is always on top */
+            }
+            /* Mobile menu drawer CSS */
+            .mobile-menu-drawer {
+                transform: translateX(100%);
+                transition: transform 0.3s ease-in-out;
+            }
+            .mobile-menu-drawer.open {
+                transform: translateX(0);
+            }
+        </style>
+
+        <script>
+            // RECIPE DATA: Single Source of Truth for all Recipe Content
+            const RECIPE_DATA = [
+                { title: 'Nutrient-Rich Palak Paneer', file: 'recipe_palak_paneer.html', img: 'recipe_palak_paneer.jpg', rating: 5.0, desc: 'Cubes of Indian cheese in a vibrant spinach sauce.' },
+                { title: 'Crispy Masala Dosa', file: 'recipe_masala_dosa.html', img: 'recipe_masala_dosa.jpg', rating: 4.0, desc: 'South Indian fermented crepe filled with spiced potatoes.' },
+                { title: 'Spiced Steamed Chhole', file: 'recipe_chhole.html', img: 'recipe_chhole_bhature.jpg', rating: 4.5, desc: 'Soft, spiced chickpeas served with a light, traditionally inspired bread.' },
+                { title: 'Smoky Paneer Tikka Masala', file: 'recipe_paneer_tikka.html', img: 'recipe_paneer_tikka.jpg', rating: 4.0, desc: 'Grilled Indian cheese in a rich, spiced tomato and cream sauce.' },
+                { title: 'Creamy Vegetable Korma', file: 'recipe_veg_korma.html', img: 'recipe_veg_korma.jpg', rating: 4.5, desc: 'Mixed vegetables cooked in a rich, nutty, and mild yogurt-based sauce.' },
+                { title: 'Protein-Rich Spiced Dal', file: 'recipe_dal.html', img: 'recipe_dal_makhani.jpg', rating: 5.0, desc: 'Black lentils slow-cooked with tomatoes and a perfect blend of spices.' },
+                { title: 'Low-Oil Turmeric Aloo Gobi', file: 'recipe_aloo_gobi.html', img: 'recipe_aloo_gobi.jpg', rating: 3.5, desc: 'Potatoes and cauliflower stir-fried with turmeric and minimal oil for lightness.' },
+                { title: 'Fragrant Vegetable Biryani', file: 'recipe_veg_biryani.html', img: 'recipe_veg_biryani.jpg', rating: 4.5, desc: 'Layered basmati rice and vegetables cooked in a rich blend of Indian spices.' }
+            ];
+
+            // Utility function to generate star HTML
+            const generateStars = (rating) => {
+                let stars = '';
+                const fullStars = Math.floor(rating);
+                const hasHalf = rating % 1 !== 0;
+                
+                for (let i = 0; i < 5; i++) {
+                    if (i < fullStars) {
+                        stars += '<i class="ri-star-fill"></i>';
+                    } else if (i === fullStars && hasHalf) {
+                        stars += '<i class="ri-star-half-fill"></i>';
+                    } else {
+                        stars += '<i class="ri-star-line"></i>';
+                    }
+                }
+                return stars;
+            };
+
+            // Dynamic HTML Generation Functions
+            const createCarouselItem = (recipe) => `
+                <div class="carousel-item group bg-background-light dark:bg-background-dark shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 recipe-card-bg relative">
+                    <div class="ingredient-card-carousel">
+                        <div class="content-wrapper">
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white">${recipe.title}</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">${recipe.rating.toFixed(1)}/5.0 Rating</p>
+                        </div>
+                        <div class="img-wrapper relative">
+                            <img alt="${recipe.title}" class="w-full h-full object-cover rounded-r-lg" src="${recipe.img}" />
+                        </div>
+                    </div>
+                    <div class="progress-bar-container"><div class="progress-bar"></div></div>
+                </div>
+            `;
+
+            const createGridItem = (recipe, delay) => `
+                <div
+                    class="group flex flex-col rounded-xl overflow-hidden bg-background-light recipe-card-bg dark:bg-background-dark dark:recipe-card-bg shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 hover:scale-105 animate-bounce-in"
+                    style="animation-delay: ${delay}s"
+                >
+                    <a class="recipe-card" href="${recipe.file}">
+                        <div class="recipe-image-container relative">
+                            <img
+                                alt="${recipe.title}"
+                                class="w-full h-48 object-cover rounded-t-xl"
+                                src="${recipe.img}"
+                            />
+                            <div class="recipe-overlay absolute inset-0"></div>
+                        </div>
+                        <div class="p-4 flex flex-col flex-grow">
+                            <h3
+                                class="text-xl font-bold text-gray-900 dark:text-white mb-2"
+                            >
+                                ${recipe.title}
+                            </h3>
+                            <div class="flex items-center mb-2">
+                                ${generateStars(recipe.rating)}
+                                <span
+                                    class="ml-2 text-gray-600 dark:text-gray-400 text-sm"
+                                    >(${recipe.rating.toFixed(1)}/5)</span
+                                >
+                            </div>
+                            <p
+                                class="text-sm text-gray-700 dark:text-gray-300 flex-grow"
+                            >
+                                ${recipe.desc}
+                            </p>
+                            <span
+                                class="mt-3 text-base font-bold text-secondary hover:text-primary transition-colors transform hover:scale-105 hover:underline"
+                                >Dive In!</span
+                            >
+                        </div>
+                    </a>
+                </div>
+            `;
+            
+            // Render Content on Load
+            document.addEventListener('DOMContentLoaded', () => {
+                const track = document.getElementById('carousel-track');
+                const recipeGrid = document.querySelector('.grid.gap-x-8');
+                
+                // 1. Populate Carousel (8 originals + 8 duplicates)
+                const carouselItemsHTML = RECIPE_DATA.map(createCarouselItem).join('') + RECIPE_DATA.map(createCarouselItem).join('');
+                if (track) track.innerHTML = carouselItemsHTML;
+
+                // 2. Populate Recipe Wonderland Grid
+                const gridItemsHTML = RECIPE_DATA.map((recipe, index) => 
+                    createGridItem(recipe, (index + 1) * 0.1) 
+                ).join('');
+                if (recipeGrid) recipeGrid.innerHTML = gridItemsHTML;
+
+
+                // --- CAROUSEL LOGIC ---
+                const prevBtn = document.getElementById('prev-slide-btn');
+                const nextBtn = document.getElementById('next-slide-btn');
+                const itemWidth = 460 + 32; 
+                const shiftItems = 1; 
+                const totalItems = 8; 
+                const slideDuration = 5000; 
+                let currentSlide = 0;
+
+                const resetProgressBar = (index) => {
+                    document.querySelectorAll('.progress-bar').forEach(bar => {
+                        bar.classList.remove('running');
+                        void bar.offsetWidth; 
+                    });
+                    
+                    const activeIndex = index % totalItems;
+                    
+                    const primaryBar = track.children[activeIndex].querySelector('.progress-bar');
+                    const duplicateBar = track.children[activeIndex + totalItems] ? track.children[activeIndex + totalItems].querySelector('.progress-bar') : null;
+                    
+                    if (primaryBar) {
+                        primaryBar.classList.add('running');
+                    }
+                    if (duplicateBar) {
+                        duplicateBar.classList.add('running');
+                    }
+                };
+
+                const goToSlide = (index, smooth = true) => {
+                    const newTranslateX = -index * itemWidth; 
+                    
+                    if (smooth) {
+                        track.classList.add('smooth-transition');
+                    } else {
+                        track.classList.remove('smooth-transition');
+                    }
+                    
+                    track.style.transform = `translateX(${newTranslateX}px)`;
+                    
+                    if (index < totalItems) {
+                        resetProgressBar(index);
+                    }
+                };
+                
+                const slideCarousel = (direction) => {
+                    clearInterval(autoSlideInterval);
+
+                    let targetIndex = currentSlide + (direction * shiftItems);
+                    
+                    if (direction > 0) { // Moving Right (Next)
+                        if (targetIndex >= totalItems) {
+                            goToSlide(targetIndex, true); 
+                            
+                            setTimeout(() => {
+                                goToSlide(0, false);
+                                currentSlide = 0;
+                                startAutoSlide();
+                            }, 500); 
+
+                        } else {
+                            currentSlide = targetIndex;
+                            goToSlide(currentSlide, true);
+                            startAutoSlide();
+                        }
+                    } else { // Moving Left (Previous)
+                        if (targetIndex < 0) {
+                            goToSlide(totalItems, false); 
+                            currentSlide = totalItems - shiftItems; 
+                            
+                            setTimeout(() => {
+                                goToSlide(currentSlide, true);
+                                startAutoSlide();
+                            }, 50); 
+                        } else {
+                            currentSlide = targetIndex;
+                            goToSlide(currentSlide, true);
+                            startAutoSlide();
+                        }
+                    }
+                };
+                
+                if (prevBtn) prevBtn.addEventListener('click', () => slideCarousel(-1));
+                if (nextBtn) nextBtn.addEventListener('click', () => slideCarousel(1));
+
+
+                let autoSlideInterval;
+                const startAutoSlide = () => {
+                    clearInterval(autoSlideInterval); 
+                    autoSlideInterval = setInterval(() => {
+                        slideCarousel(1); 
+                    }, slideDuration); 
+                    
+                    resetProgressBar(currentSlide);
+                };
+                
+                startAutoSlide();
+
+
+                // --- SEARCH LOGIC ---
+                const searchForm = document.getElementById('recipe-search-form');
+                const searchInput = document.getElementById('recipe-search-input');
+                const suggestionsContainer = document.getElementById('recipe-suggestions');
+                
+                if (searchForm) {
+                    searchForm.addEventListener('submit', (e) => {
+                        e.preventDefault(); 
+                    });
+                }
+                
+                const renderSuggestions = (searchTerm) => {
+                    suggestionsContainer.innerHTML = '';
+                    if (searchTerm.length === 0) return;
+
+                    const lowerCaseSearch = searchTerm.toLowerCase();
+                    const filtered = RECIPE_DATA.filter(recipe => 
+                        recipe.title.toLowerCase().includes(lowerCaseSearch)
+                    );
+
+                    if (filtered.length > 0) {
+                        filtered.forEach(recipe => {
+                            const item = document.createElement('div');
+                            item.className = 'suggestion-item text-gray-900 dark:text-gray-200';
+                            item.textContent = recipe.title;
+                            item.addEventListener('mousedown', (e) => {
+                                e.preventDefault();
+                                window.location.href = recipe.file;
+                            });
+                            suggestionsContainer.appendChild(item);
+                        });
+                    }
+                };
+
+                if (searchInput) {
+                    searchInput.addEventListener('input', (event) => {
+                        renderSuggestions(event.target.value);
+                    });
+                    
+                    searchInput.addEventListener('blur', () => {
+                        setTimeout(() => {
+                            suggestionsContainer.innerHTML = '';
+                        }, 200); 
+                    });
+                    
+                    searchInput.addEventListener('focus', (event) => {
+                        renderSuggestions(event.target.value);
+                    });
+                }
+            });
+        </script>
+    </head>
+    <body
+        class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200"
+    >
+        <div class="flex flex-col min-h-screen">
+            <header
+                style="box-shadow: 0 8px 32px 0 rgba(56, 224, 123, 0.15);"
+                class="sticky top-0 z-50 h-15 flex items-center w-full border-b border-primary/20 dark:border-primary/30 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm"
+            >
+                <div
+                    class="container mx-auto flex items-center justify-between px-4 py-3 sm:px-6 lg:px-8"
+                >
+                    <div class="flex items-center gap-4">
+                        <img
+                            src="logo_new.png"
+                            alt="ChefAI Logo"
+                            class="h-10 w-10 object-contain"
+                        />
+                        <h1
+                            class="text-3xl font-bold text-gray-900 dark:text-white"
+                        >
+                            Chef<span class="text-primary">AI</span>
+                        </h1>
+                    </div>
+                    
+                    <div class="flex items-center gap-2"> 
+                        <nav class="hidden items-center gap-20 md:flex">
+                            <a class="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors" href="sample.html">Home</a>
+                            <a class="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors" href="recipes.html">Recipes</a>
+                            <a class="text-base font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors" href="about.html">About Us</a>
+                        </nav>
+                        <button
+                            id="mobile-menu-button"
+                            class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200/50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-800 hover:text-primary dark:hover:text-primary transition-colors md:hidden"
+                        >
+                            <span class="material-symbols-outlined">
+                                menu
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <div 
+                id="mobile-menu-drawer"
+                class="mobile-menu-drawer fixed top-0 right-0 z-50 w-64 h-full p-6 
+                       bg-background-light dark:bg-background-dark shadow-2xl md:hidden"
+            >
+                <div class="flex justify-between items-center mb-10">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Menu</h2>
+                    <button id="close-menu-button" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined text-3xl">close</span>
+                    </button>
+                </div>
+                <nav class="flex flex-col space-y-4">
+                    <a href="sample.html" class="text-xl font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors py-2 border-b border-primary/20">Home</a>
+                    <a href="recipes.html" class="text-xl font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors py-2 border-b border-primary/20">Recipes</a>
+                    <a href="about.html" class="text-xl font-medium text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors py-2">About Us</a>
+                </nav>
+            </div>
+            
+            <main class="flex-grow py-12 px-4">
+                <div class="container mx-auto">
+                    <div class="max-w-5xl mx-auto text-center mb-16">
+                        <h1
+                            class="text-5xl md:text-7xl font-bold text-primary dark:text-secondary mb-6 leading-tight animate-bounce-in"
+                        >
+                            Whip Up Some Magic!
+                        </h1>
+                        <p
+                            class="text-xl text-gray-700 dark:text-gray-300 mb-10 max-w-3xl mx-auto"
+                        >
+                            Explore a playground of delicious vegetarian recipes, packed
+                            with fun and flavor. Your culinary adventure starts
+                            here!
+                        </p>
+                        <div
+                            class="relative max-w-2xl mx-auto mb-12 z-10"
+                            style="margin-top: 1rem;" 
+                        >
+                            <form id="recipe-search-form" class="relative">
+                                <span
+                                    class="material-symbols-outlined absolute left-6 top-1/2 -translate-y-1/2 text-primary dark:text-secondary text-3xl"
+                                >
+                                    search
+                                </span>
+                                <input
+                                    id="recipe-search-input"
+                                    class="w-full pl-16 pr-8 py-4 rounded-full border-4 border-secondary dark:border-primary bg-white dark:bg-black/20 focus:ring-4 focus:ring-accent focus:border-accent transition-all text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-lg shadow-lg"
+                                    placeholder="Search for yummy recipes..."
+                                    type="search"
+                                    autocomplete="off"
+                                />
+                            </form>
+                            <div id="recipe-suggestions" class="rounded-lg shadow-lg"></div>
+                        </div>
+                        
+                    </div>
+                    
+                    <section class="mb-16 relative">
+                        <h2
+                            class="text-4xl font-bold text-gray-900 dark:text-white mb-10 text-center animate-bounce-in"
+                        >
+                            Chef's Veggie Picks
+                        </h2>
+                        
+                        <button id="prev-slide-btn" class="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-background-light/80 dark:bg-background-dark/80 shadow-lg hover:bg-primary/50 transition-colors hidden sm:block">
+                            <span class="material-symbols-outlined text-3xl text-gray-800 dark:text-gray-200">arrow_back_ios</span>
+                        </button>
+                        
+                        <button id="next-slide-btn" class="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-background-light/80 dark:bg-background-dark/80 shadow-lg hover:bg-primary/50 transition-colors hidden sm:block">
+                            <span class="material-symbols-outlined text-3xl text-gray-800 dark:text-gray-200">arrow_forward_ios</span>
+                        </button>
+
+                        <div class="carousel-container mx-auto max-w-full sm:max-w-[1074px]"> 
+                            <div id="carousel-track" class="carousel-track" style="transform: translateX(0px);">
+                                
+                                </div>
+                        </div>
+                    </section>
+                    
+                    <h2
+                        class="text-4xl font-bold text-gray-900 dark:text-white mb-10 text-center animate-bounce-in"
+                    >
+                        Recipe Wonderland
+                    </h2>
+                    <div
+                        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12"
+                    >
+                        </div>
+                </div>
+            </main>
+            
+            <footer class="bg-background-light dark:bg-background-dark border-t border-gray-200 dark:border-gray-800">
+                <div class="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+                    <div
+                        class="flex flex-col items-center justify-between gap-4 sm:flex-row"
+                    >
+                        <div
+                            class="flex flex-wrap justify-center gap-x-6 gap-y-2"
+                        >
+                            <a
+                                class="text-sm text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
+                                href="#"
+                                >Privacy Policy</a
+                            >
+                            <a
+                                class="text-sm text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"
+                                href="#"
+                                >Terms of Service</a
+                            >
+                        </div>
+                        <p class="text-sm text-gray-500 dark:text-gray-500">
+                            © 2024 ChefAI. All rights reserved.
+                        </p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+        
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                // MOBILE MENU LOGIC (Repeated for functionality)
+                const menuButton = document.getElementById('mobile-menu-button');
+                const closeButton = document.getElementById('close-menu-button');
+                const menuDrawer = document.getElementById('mobile-menu-drawer');
+                const body = document.body;
+
+                const toggleMenu = (open) => {
+                    if (open) {
+                        menuDrawer.classList.add('open');
+                        body.style.overflow = 'hidden'; 
+                    } else {
+                        menuDrawer.classList.remove('open');
+                        body.style.overflow = '';
+                    }
+                };
+
+                if (menuButton) {
+                    menuButton.addEventListener('click', () => toggleMenu(true));
+                }
+                if (closeButton) {
+                    closeButton.addEventListener('click', () => toggleMenu(false));
+                }
+            });
+        </script>
+    </body>
+</html>
