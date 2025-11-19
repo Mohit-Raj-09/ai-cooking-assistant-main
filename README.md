@@ -43,10 +43,11 @@ pip install --force-reinstall torch torchvision torchaudio --index-url https://d
 
 
 
-# run backend and model 
-# open both in different terminal
+# run backend and frontend model, (open both in different terminal)
 uvicorn app:app --reload --host 0.0.0.0 --port 8000
+
 python -m http.server 5500
 
 # link of website
+
 http://localhost:5500/sample.html#home
